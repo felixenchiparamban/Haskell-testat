@@ -1,5 +1,6 @@
 import Data.List (groupBy, sortBy)
 import Data.Function (on)
+import Data.Ord
 
 -- Timetable
 
@@ -126,11 +127,11 @@ result2 = allTimetablesGrouppedByTimeSlot result1
 --  [(("Day1",10,12),"OO"),(("Day1",10,12),"SE")], --> 10 * 2 = 20
 --  [(("Day2",10,12),"SE")]] --> 0
 
--- is it possible to define a constant inside a function and reuse it in if/else constructor
 mapPointsToTimeSlot (ts:tss) = 
-    if length(ts:tss) <= 1 
+    if n <= 1 
         then 0
-        else length(ts:tss) * 10
+        else n * 10
+    where n = length(ts:tss)
 
 -- apply Rule 1 to timetable
 applyConcurrentModulesRule (t:ts) = sum (map mapPointsToTimeSlot (t:ts))
@@ -139,6 +140,16 @@ applyConcurrentModulesRule (t:ts) = sum (map mapPointsToTimeSlot (t:ts))
 applyRules (t:ts) = applyConcurrentModulesRule (t:ts) 
                     -- + applyConcurrentModulesRule (t:ts)
 
-allTimetablesMappedWithPoints (t:ts) = map applyRules (t:ts)
+mapIndex (t:ts) = zip [0..n] (t:ts) where n = (length (t:ts) - 1)
+allTimetablesMappedWithPoints (t:ts) = mapIndex (map applyRules (t:ts))
 
 result3 = allTimetablesMappedWithPoints result2
+-- [(0,20),(1,20),(2,20),(3,0),(4,0),(5,0),(6,0),(7,0),(8,0)]
+
+sortPoints (p:ps) = sortBy (compare `on` snd) (p:ps)
+
+indexOfMostConvenientTimetable (t:ts) = fst (head (sortPoints (allTimetablesMappedWithPoints result2)))
+
+-- [[(("Day1",8,10),"OO")],[(("Day1",10,12),"SE")],[(("Day1",13,15),"OO")],[(("Day2",10,12),"SE")]]
+-- enough rules should be applied to get better timetable
+bestTimetable (t:ts) = (t:ts) !! (indexOfMostConvenientTimetable (t:ts))
