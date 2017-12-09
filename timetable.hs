@@ -1,10 +1,10 @@
 -- Timetable
 
 -- define Module Type
--- data Module = OO | BSYS1 | BSYS2 | SE | PARAPROG | ENGPROJ | AN1 | AN2 | DM deriving (Show, Eq) 
+data Module = OO | BSYS1 | BSYS2 | SE | PARAPROG | ENGPROJ | AN1 | AN2 | DM deriving (Show, Eq) 
 
 -- define Class Type
--- data Class = Lecture (Day, Int, Int) | Exercise (Day, Int, Int) deriving Show
+data Class = Lecture (Day, Int, Int) | Exercise (Day, Int, Int) deriving Show
 
 -- define Day Type
 data Day = Day1 | Day2 | Day3 | Day4 | Day5 deriving Show
@@ -40,22 +40,15 @@ myModulePlanCombinations myModules = map modulePlanCombination (myModulesTimetab
 -- find out all possible timetables
 allTimetables myModules = sequence (myModulePlanCombinations myModules)
 
--- enrolledModulesTimetable (x:xs)
-mytest = [
-    ("maths", ["mon", "tue"]),
-    ("science", ["mon", "wed"])]
+-- for OO and SE, 9 possible timetables
+-- [[("OO",(("Day1",8,10),("Day1",10,12))),("SE",(("Day1",10,12),("Day2",10,12)))],
+-- [("OO",(("Day1",8,10),("Day1",10,12))),("SE",(("Day1",10,12),("Day3",8,10)))],
+-- [("OO",(("Day1",8,10),("Day1",10,12))),("SE",(("Day1",10,12),("Day3",10,12)))],
+-- [("OO",(("Day1",8,10),("Day1",13,15))),("SE",(("Day1",10,12),("Day2",10,12)))],
+-- [("OO",(("Day1",8,10),("Day1",13,15))),("SE",(("Day1",10,12),("Day3",8,10)))],
+-- [("OO",(("Day1",8,10),("Day1",13,15))),("SE",(("Day1",10,12),("Day3",10,12)))],
+-- [("OO",(("Day1",8,10),("Day2",8,10))),("SE",(("Day1",10,12),("Day2",10,12)))],
+-- [("OO",(("Day1",8,10),("Day2",8,10))),("SE",(("Day1",10,12),("Day3",8,10)))],
+-- [("OO",(("Day1",8,10),("Day2",8,10))),("SE",(("Day1",10,12),("Day3",10,12)))]]
 
--- one combination
--- [(maths, mon), (science, mon)]
-
--- build all combinations
--- combinations = [[("maths", "mon"), ("science", "mon")],
---                  [("maths", "mon"), ("science", "wed")]
---                  -- etc.
---                  ]
-
--- [("maths","mon"),("maths","tue"),("science","mon"),("science","wed")]
-flatSubjectDayArray (subject, days) = [ (subject, d) | d <- days]
-mappedSubjectDays = map flatSubjectDayArray mytest
-
-allCombinations = sequence mappedSubjectDays
+-- give points to a timetable to compare with other timetables
