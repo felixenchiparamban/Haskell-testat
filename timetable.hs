@@ -27,7 +27,22 @@ modulesTimetable = [
 -- lectures :: Module -> (Day, Int, Int)
 lecture x = [l | (m, l, es) <- modulesTimetable, x == m]
 
--- find out lecture sessions for the given modules
-lectures (x:xs) = [(m,l) | (m, l, es) <- modulesTimetable, m `elem` (x:xs)]
+-- find out lecture and exercise sessions of my modules
+myModulesTimetable (x:xs) = [(m,l, es) | (m, l, es) <- modulesTimetable, m `elem` (x:xs)]
 
 -- enrolledModulesTimetable (x:xs)
+mytest = [
+    ("maths", ["mon", "tue"]),
+    ("science", ["mon", "wed"])]
+
+-- one combination
+-- [(maths, mon), (science, mon)]
+
+-- build all combinations
+-- combinations = [[("maths", "mon"), ("science", "mon")],
+--                  [("maths", "mon"), ("science", "wed")]
+--                  -- etc.
+--                  ]
+comb (subject, days) = [ (subject, d) | d <- days]
+combinations = [ (m, e) | (m, z) <- mytest, e <- z]
+combinations2 = [ [c] | c <- [1..2]]
