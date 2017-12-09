@@ -30,6 +30,9 @@ lecture x = [l | (m, l, es) <- modulesTimetable, x == m]
 -- find out lecture and exercise sessions of my modules
 myModulesTimetable (x:xs) = [(m,l, es) | (m, l, es) <- modulesTimetable, m `elem` (x:xs)]
 
+modulePlanCombination (m, l, es) = [ (m, l, e) | e <- es]
+myModulePlanCombinations myModules = map modulePlanCombination (myModulesTimetable myModules)
+
 -- enrolledModulesTimetable (x:xs)
 mytest = [
     ("maths", ["mon", "tue"]),
@@ -43,6 +46,10 @@ mytest = [
 --                  [("maths", "mon"), ("science", "wed")]
 --                  -- etc.
 --                  ]
-comb (subject, days) = [ (subject, d) | d <- days]
+
+-- [("maths","mon"),("maths","tue"),("science","mon"),("science","wed")]
+flatSubjectDayArray (subject, days) = [ (subject, d) | d <- days]
+mappedSubjectDays = map flatSubjectDayArray mytest
+
 combinations = [ (m, e) | (m, z) <- mytest, e <- z]
 combinations2 = [ [c] | c <- [1..2]]
