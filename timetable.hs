@@ -65,10 +65,6 @@ mergeAll ([]:xss) = mergeAll xss
 mergeAll ((x:xs):xss) = x : mergeTwo xs (mergeAll xss)
 
 -- map modules to timeslot
-oneTimetable = [("OO",(("Day1",8,10),("Day1",10,12))),("SE",(("Day1",10,12),("Day2",10,12)))]
-manyTimeTables = [[("OO",(("Day1",8,10),("Day1",10,12))),("SE",(("Day1",10,12),("Day2",10,12)))],
-                  [("OO",(("Day1",8,10),("Day1",10,12))),("SE",(("Day1",10,12),("Day3",8,10)))]]
-
 mapTimeSlot (m, (l, e)) = [(t, m) | t <- [l, e]]
 -- mapped timeslot: map mapTimeSlot oneTimetable 
 -- [[(("Day1",8,10),"OO"),(("Day1",10,12),"OO")],
@@ -87,10 +83,34 @@ allTimetablesMappedWithTimeSlot (t:ts) = map (\aTimetable -> mergeAll (map mapTi
 -- [(("Day1",8,10),"OO"),(("Day1",10,12),"SE"),(("Day2",8,10),"OO"),(("Day3",8,10),"SE")],
 -- [(("Day1",8,10),"OO"),(("Day1",10,12),"SE"),(("Day2",8,10),"OO"),(("Day3",10,12),"SE")]]
 
-result = allTimetablesMappedWithTimeSlot (allTimetables ["OO", "SE"])
+result1 = allTimetablesMappedWithTimeSlot (allTimetables ["OO", "SE"])
+
+-- group timeslots
+-- the list should be sorted in order to group
+-- unsortedList = [(("Day2",10,12),"SE"),(("Day1",10,12),"OO"),(("Day1",8,10),"OO"),(("Day1",10,12),"SE")]
+sortedList = [(("Day1",8,10),"OO"),(("Day1",10,12),"OO"),(("Day1",10,12),"SE"),(("Day2",10,12),"SE")]
+
+-- xs = [("a",1),("b",2),("a",1)]
+-- mySort n = sortBy (compare `on` snd) n
+-- fi = groupBy ((==) `on` snd) (mySort xs)
+
+-- [[(("Day1",8,10),"OO")],
+--  [(("Day1",10,12),"OO"),(("Day1",10,12),"SE")],
+--  [(("Day2",10,12),"SE")]]
+groupByTimeSlot aSortedTimetable = groupBy ((==) `on` fst) aSortedTimetable
+
+allTimetablesGrouppedByTimeSlot (t:ts) = map groupByTimeSlot (t:ts)
+
+-- [[[(("Day1",8,10),"OO")],[(("Day1",10,12),"OO"),(("Day1",10,12),"SE")],[(("Day2",10,12),"SE")]],
+-- [[(("Day1",8,10),"OO")],[(("Day1",10,12),"OO"),(("Day1",10,12),"SE")],[(("Day3",8,10),"SE")]],
+-- [[(("Day1",8,10),"OO")],[(("Day1",10,12),"OO"),(("Day1",10,12),"SE")],[(("Day3",10,12),"SE")]],
+-- [[(("Day1",8,10),"OO")],[(("Day1",10,12),"SE")],[(("Day1",13,15),"OO")],[(("Day2",10,12),"SE")]],
+-- [[(("Day1",8,10),"OO")],[(("Day1",10,12),"SE")],[(("Day1",13,15),"OO")],[(("Day3",8,10),"SE")]],
+-- [[(("Day1",8,10),"OO")],[(("Day1",10,12),"SE")],[(("Day1",13,15),"OO")],[(("Day3",10,12),"SE")]],
+-- [[(("Day1",8,10),"OO")],[(("Day1",10,12),"SE")],[(("Day2",8,10),"OO")],[(("Day2",10,12),"SE")]],
+-- [[(("Day1",8,10),"OO")],[(("Day1",10,12),"SE")],[(("Day2",8,10),"OO")],[(("Day3",8,10),"SE")]],
+-- [[(("Day1",8,10),"OO")],[(("Day1",10,12),"SE")],[(("Day2",8,10),"OO")],[(("Day3",10,12),"SE")]]]
+
+result2 = allTimetablesGrouppedByTimeSlot result1
 
 -- give points to a timetable to compare with other timetables
-xs = [("a",1),("b",2),("a",1)]
-sx = [(n, s) | (s,n) <- xs]
-mySort n = sortBy (compare `on` snd) n
-fi = groupBy ((==) `on` snd) (mySort xs)
