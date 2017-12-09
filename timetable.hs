@@ -114,3 +114,31 @@ allTimetablesGrouppedByTimeSlot (t:ts) = map groupByTimeSlot (t:ts)
 result2 = allTimetablesGrouppedByTimeSlot result1
 
 -- give points to a timetable to compare with other timetables
+-- the timetable with the lowest points is better
+-- Rule 1) concurrent modules
+-- only one module in the timeslot => 0 pts
+-- n modules in the same timeslot => 10 * n pts
+
+-- more rules can be defined as mentioned above
+
+-- oneGrouppedTimetable = 
+-- [[(("Day1",8,10),"OO")], --> 0
+--  [(("Day1",10,12),"OO"),(("Day1",10,12),"SE")], --> 10 * 2 = 20
+--  [(("Day2",10,12),"SE")]] --> 0
+
+-- is it possible to define a constant inside a function and reuse it in if/else constructor
+mapPointsToTimeSlot (ts:tss) = 
+    if length(ts:tss) <= 1 
+        then 0
+        else length(ts:tss) * 10
+
+-- apply Rule 1 to timetable
+applyConcurrentModulesRule (t:ts) = sum (map mapPointsToTimeSlot (t:ts))
+
+-- list all rules here
+applyRules (t:ts) = applyConcurrentModulesRule (t:ts) 
+                    -- + applyConcurrentModulesRule (t:ts)
+
+allTimetablesMappedWithPoints (t:ts) = map applyRules (t:ts)
+
+result3 = allTimetablesMappedWithPoints result2
