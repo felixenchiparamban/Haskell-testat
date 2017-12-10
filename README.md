@@ -1,1 +1,164 @@
-# Haskell-testat
+# Haskell Testat - Timetable
+
+by Felix Varghese Enchiparambam & Keerthikan Thurairatnam
+
+First we need to define a module plan which shows when a module's lecture and exercises are held, as shown below.
+
+## Module Plan
+
+A modules plan is a list of tuples `(Module, Lecture, [Excercises])`.
+
+```hs
+modulesPlan = [
+    (OO, (Day1, 8, 10), [(Day1, 10, 12), (Day1, 13, 15), (Day2, 8, 10)]), 
+    (SE, (Day1, 10, 12), [(Day2, 10, 12), (Day3, 8, 10), (Day3, 10, 12)]),
+    (AN1, (Day1, 13, 15), [(Day2, 10, 12), (Day2, 13, 15), (Day3, 15, 17)])]
+```
+
+You can pass your selection of modules (e.g. `[OO, SE]`) and our program will give you the best suitable timetable for the next semester.
+
+The complete code is [here](timetable.hs).
+
+## Function References and Examples
+
+In this section we explain the necessary steps how the functions can be used in order to generate a best suitable timetable.
+
+### Step 1: getMyModulesPlan
+
+The `getMyModulesPlan` function returns all timeslots (lecture and exercises) for the given modules.
+
+```hs
+*Main> step1 = getMyModulesPlan [OO, SE]
+
+*Main> step1
+[(OO,(Day1,8,10),[(Day1,10,12),(Day1,13,15),(Day2,8,10)]),
+(SE,(Day1,10,12),[(Day2,10,12),(Day3,8,10),(Day3,10,12)])]
+```
+
+### Step 2: mapMyModulePlanToTimeslots
+
+A module has one lecture and multiple exercises. For instance, `OO` has lecture on `(Day1,8,10)` and a list of 3 exercises `[(Day1,10,12),(Day1,13,15),(Day2,8,10)]`
+
+The function `mapMyModulePlanToTimeslots` generate all possible tuples of lecture and exercise. In this case, it generate 3 tuples as follows.
+1. `(OO,((Day1,8,10),(Day1,10,12))`
+2. `(OO,((Day1,8,10),(Day1,13,15))`
+3. `(OO,((Day1,8,10),(Day2,8,10)))`
+
+```hs
+*Main> step2 = mapMyModulePlanToTimeslots result0
+
+*Main> step2
+[[(OO,((Day1,8,10),(Day1,10,12))),(OO,((Day1,8,10),(Day1,13,15))),(OO,((Day1,8,10),(Day2,8,10)))],
+[(SE,((Day1,10,12),(Day2,10,12))),(SE,((Day1,10,12),(Day3,8,10))),(SE,((Day1,10,12),(Day3,10,12)))]]
+```
+
+### Step 3: generateAllTimetables
+
+It generates all possible timetables. In our example, it generates 9 different timetables for the selected 2 modules (OO, SE).
+
+```hs
+*Main> step3 = generateAllTimetables step2
+
+*Main> step3
+[[(OO,((Day1,8,10),(Day1,10,12))),(SE,((Day1,10,12),(Day2,10,12)))],
+[(OO,((Day1,8,10),(Day1,10,12))),(SE,((Day1,10,12),(Day3,8,10)))],
+[(OO,((Day1,8,10),(Day1,10,12))),(SE,((Day1,10,12),(Day3,10,12)))],
+[(OO,((Day1,8,10),(Day1,13,15))),(SE,((Day1,10,12),(Day2,10,12)))],
+[(OO,((Day1,8,10),(Day1,13,15))),(SE,((Day1,10,12),(Day3,8,10)))],
+[(OO,((Day1,8,10),(Day1,13,15))),(SE,((Day1,10,12),(Day3,10,12)))],
+[(OO,((Day1,8,10),(Day2,8,10))),(SE,((Day1,10,12),(Day2,10,12)))],
+[(OO,((Day1,8,10),(Day2,8,10))),(SE,((Day1,10,12),(Day3,8,10)))],
+[(OO,((Day1,8,10),(Day2,8,10))),(SE,((Day1,10,12),(Day3,10,12)))]]
+```
+
+### Step 4: mapTimetableWithGenericTimeslots
+
+We want to convert the more specific module tuple `(Module, Lecture, Exercise)` to two generic timeslots `(Timeslot, Module)`.
+
+For instance `(OO,((Day1,8,10),(Day1,10,12))` will be converted to
+1. `((Day1,8,10),OO)`
+2. `((Day1,10,12),OO)`
+
+```hs
+*Main> step4 = mapTimetableWithGenericTimeslots step3
+
+*Main> step4
+[[((Day1,8,10),OO),((Day1,10,12),OO),((Day1,10,12),SE),((Day2,10,12),SE)],
+[((Day1,8,10),OO),((Day1,10,12),OO),((Day1,10,12),SE),((Day3,8,10),SE)],
+[((Day1,8,10),OO),((Day1,10,12),OO),((Day1,10,12),SE),((Day3,10,12),SE)],
+[((Day1,8,10),OO),((Day1,10,12),SE),((Day1,13,15),OO),((Day2,10,12),SE)],
+[((Day1,8,10),OO),((Day1,10,12),SE),((Day1,13,15),OO),((Day3,8,10),SE)],
+[((Day1,8,10),OO),((Day1,10,12),SE),((Day1,13,15),OO),((Day3,10,12),SE)],
+[((Day1,8,10),OO),((Day1,10,12),SE),((Day2,8,10),OO),((Day2,10,12),SE)],
+[((Day1,8,10),OO),((Day1,10,12),SE),((Day2,8,10),OO),((Day3,8,10),SE)],
+[((Day1,8,10),OO),((Day1,10,12),SE),((Day2,8,10),OO),((Day3,10,12),SE)]]
+```
+
+### Step 5: mapTimetablesGrouppedByTimeslot
+
+A timetable contains a list of tuples `(Timeslot, Module)`. We want to group the list by the timeslot.
+
+For example, the following timetable has 4 tuples with 3 different timeslots `[((Day1,8,10),OO),((Day1,10,12),OO),((Day1,10,12),SE),((Day2,10,12),SE)]`.
+
+After grouping, the timestable should contain 3 elements as follows.
+1. `[((Day1,8,10),OO)]`
+2. `[((Day1,10,12),OO),((Day1,10,12),SE)]`
+3. `[((Day2,10,12),SE)]`
+
+```hs
+*Main> step5 = mapTimetablesGrouppedByTimeslot step4
+
+*Main> step5
+[[[((Day1,8,10),OO)],[((Day1,10,12),OO),((Day1,10,12),SE)],[((Day2,10,12),SE)]],
+[[((Day1,8,10),OO)],[((Day1,10,12),OO),((Day1,10,12),SE)],[((Day3,8,10),SE)]],
+[[((Day1,8,10),OO)],[((Day1,10,12),OO),((Day1,10,12),SE)],[((Day3,10,12),SE)]],
+[[((Day1,8,10),OO)],[((Day1,10,12),SE)],[((Day1,13,15),OO)],[((Day2,10,12),SE)]],
+[[((Day1,8,10),OO)],[((Day1,10,12),SE)],[((Day1,13,15),OO)],[((Day3,8,10),SE)]],
+[[((Day1,8,10),OO)],[((Day1,10,12),SE)],[((Day1,13,15),OO)],[((Day3,10,12),SE)]],
+[[((Day1,8,10),OO)],[((Day1,10,12),SE)],[((Day2,8,10),OO)],[((Day2,10,12),SE)]],
+[[((Day1,8,10),OO)],[((Day1,10,12),SE)],[((Day2,8,10),OO)],[((Day3,8,10),SE)]],
+[[((Day1,8,10),OO)],[((Day1,10,12),SE)],[((Day2,8,10),OO)],[((Day3,10,12),SE)]]]
+```
+
+### Step 6: mapPointsToTimetable
+
+In order to compare the timetables, we give points to them by applying different rules.
+
+* Rule 1 : ConcurrentModules Rule
+  * If there is only one module in the timeslot => 0 pts
+  * If there are several modules (n) in the same timeslot => 10 * n pts
+
+> More rules can be defined as mentioned above
+
+> More rules should be applied to get better result
+
+The function `mapPointsToTimetable` applies all the defined rules and returns the points `(index, points)` for every timetable  --> the lower the points the better the timetable.
+
+```hs
+*Main> step6 = mapPointsToTimetable step5
+
+*Main> step6
+[(0,20),(1,20),(2,20),(3,0),(4,0),(5,0),(6,0),(7,0),(8,0)]
+```
+
+### Step 7: getIndexOfLeastPoints
+
+The function `getIndexOfLeastPoints` sort the list `[(0,20),(1,20),(2,20),(3,0),(4,0),(5,0),(6,0),(7,0),(8,0)]` by points and returns the index with least points.
+
+```hs
+*Main> step7 = getIndexOfLeastPoints step6
+
+*Main> step7
+3
+```
+
+### Step 8: getTimetableByIndex
+
+The function `getTimetableByIndex` returns the timetable at given index.
+
+```hs
+*Main> step8 = getTimetableByIndex step5 step7
+
+*Main> step8
+[[((Day1,8,10),OO)],[((Day1,10,12),SE)],[((Day1,13,15),OO)],[((Day2,10,12),SE)]]
+```
