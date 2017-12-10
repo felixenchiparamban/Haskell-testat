@@ -24,35 +24,20 @@ modulesPlan = [
     (SE, (Day1, 10, 12), [(Day2, 10, 12), (Day3, 8, 10), (Day3, 10, 12)]),
     (AN1, (Day1, 13, 15), [(Day2, 10, 12), (Day2, 13, 15), (Day3, 15, 17)])]
 
--- find out lecture and exercise sessions of my modules
+-- find out all timeslots (lecture and exercises) for the given modules
 getMyModulesPlan :: [Module]-> [(Module, (Day, Integer, Integer), [(Day, Integer, Integer)])]
 getMyModulesPlan ms = [(m,l, es) | (m, l, es) <- modulesPlan, m `elem` ms]
 
 generateAllTimeslots :: (m, l, [e]) -> [(m, (l, e))]
 generateAllTimeslots (m, l, es) = [ (m, (l, e)) | e <- es]
 
+--  generate all possible tuples of lecture and exercise
 mapMyModulePlanToTimeslots :: [(m, l, [e])] -> [[(m, (l, e))]]
 mapMyModulePlanToTimeslots myModulePlan = map generateAllTimeslots myModulePlan
--- mapMyModulePlanToTimeslots ["OO", "SE"]
--- result would be [[(m, (l, e))]]
--- [[("OO",(("Day1",8,10),("Day1",10,12))),("OO",(("Day1",8,10),("Day1",13,15))),("OO",(("Day1",8,10),("Day2",8,10)))],
---  [("SE",(("Day1",10,12),("Day2",10,12))),("SE",(("Day1",10,12),("Day3",8,10))),("SE",(("Day1",10,12),("Day3",10,12)))]]
 
 -- find out all possible timetables
 generateAllTimetables :: (Traversable t, Monad m) => t (m a) -> m (t a)
 generateAllTimetables  myModuleTimeslots = sequence myModuleTimeslots
-
--- for OO and SE, 9 possible timetables
--- [[("OO",(("Day1",8,10),("Day1",10,12))),("SE",(("Day1",10,12),("Day2",10,12)))],
--- [("OO",(("Day1",8,10),("Day1",10,12))),("SE",(("Day1",10,12),("Day3",8,10)))],
--- [("OO",(("Day1",8,10),("Day1",10,12))),("SE",(("Day1",10,12),("Day3",10,12)))],
--- [("OO",(("Day1",8,10),("Day1",13,15))),("SE",(("Day1",10,12),("Day2",10,12)))],
--- [("OO",(("Day1",8,10),("Day1",13,15))),("SE",(("Day1",10,12),("Day3",8,10)))],
--- [("OO",(("Day1",8,10),("Day1",13,15))),("SE",(("Day1",10,12),("Day3",10,12)))],
--- [("OO",(("Day1",8,10),("Day2",8,10))),("SE",(("Day1",10,12),("Day2",10,12)))],
--- [("OO",(("Day1",8,10),("Day2",8,10))),("SE",(("Day1",10,12),("Day3",8,10)))],
--- [("OO",(("Day1",8,10),("Day2",8,10))),("SE",(("Day1",10,12),("Day3",10,12)))]]
-
 
 -- Merge------------
 
@@ -73,44 +58,19 @@ mergeAll ((x:xs):xss) = x : mergeTwo xs (mergeAll xss)
 -- map modules to timeslot
 convertToGenericTimeslot :: (m, (t, t)) -> [(t, m)]
 convertToGenericTimeslot (m, (l, e)) = [(t, m) | t <- [l, e]]
--- mapped timeslot: map convertToGenericTimeslot oneTimetable 
--- [[(("Day1",8,10),"OO"),(("Day1",10,12),"OO")],
---  [(("Day1",10,12),"SE"),(("Day2",10,12),"SE")]]
 
 -- all time tables mapped to time slots
+-- convert the more specific module tuple `(Module, Lecture, Exercise)` to two generic timeslots `(Timeslot, Module)
 mapTimetableWithGenericTimeslots :: (Ord t, Ord m) => [[(m, (t, t))]] -> [[(t, m)]]
 mapTimetableWithGenericTimeslots (t:ts) = map (\aTimetable -> mergeAll (map convertToGenericTimeslot aTimetable)) (t:ts)
 
--- [[(("Day1",8,10),"OO"),(("Day1",10,12),"OO"),(("Day1",10,12),"SE"),(("Day2",10,12),"SE")],
--- [(("Day1",8,10),"OO"),(("Day1",10,12),"OO"),(("Day1",10,12),"SE"),(("Day3",8,10),"SE")],
--- [(("Day1",8,10),"OO"),(("Day1",10,12),"OO"),(("Day1",10,12),"SE"),(("Day3",10,12),"SE")],
--- [(("Day1",8,10),"OO"),(("Day1",10,12),"SE"),(("Day1",13,15),"OO"),(("Day2",10,12),"SE")],
--- [(("Day1",8,10),"OO"),(("Day1",10,12),"SE"),(("Day1",13,15),"OO"),(("Day3",8,10),"SE")],
--- [(("Day1",8,10),"OO"),(("Day1",10,12),"SE"),(("Day1",13,15),"OO"),(("Day3",10,12),"SE")],
--- [(("Day1",8,10),"OO"),(("Day1",10,12),"SE"),(("Day2",8,10),"OO"),(("Day2",10,12),"SE")],
--- [(("Day1",8,10),"OO"),(("Day1",10,12),"SE"),(("Day2",8,10),"OO"),(("Day3",8,10),"SE")],
--- [(("Day1",8,10),"OO"),(("Day1",10,12),"SE"),(("Day2",8,10),"OO"),(("Day3",10,12),"SE")]]
-
 -- group timeslots
-
--- [[(("Day1",8,10),"OO")],
---  [(("Day1",10,12),"OO"),(("Day1",10,12),"SE")],
---  [(("Day2",10,12),"SE")]]
 groupByTimeSlot :: Eq t => [(t, m)] -> [[(t, m)]]
 groupByTimeSlot aSortedTimetable = groupBy ((==) `on` fst) aSortedTimetable
 
+-- A timetable contains a list of tuples `(Timeslot, Module)`. We want to group the list by the timeslot.
 mapTimetablesGrouppedByTimeslot :: Eq t => [[(t, m)]] -> [[[(t, m)]]]
 mapTimetablesGrouppedByTimeslot (t:ts) = map groupByTimeSlot (t:ts)
-
--- [[[(("Day1",8,10),"OO")],[(("Day1",10,12),"OO"),(("Day1",10,12),"SE")],[(("Day2",10,12),"SE")]],
--- [[(("Day1",8,10),"OO")],[(("Day1",10,12),"OO"),(("Day1",10,12),"SE")],[(("Day3",8,10),"SE")]],
--- [[(("Day1",8,10),"OO")],[(("Day1",10,12),"OO"),(("Day1",10,12),"SE")],[(("Day3",10,12),"SE")]],
--- [[(("Day1",8,10),"OO")],[(("Day1",10,12),"SE")],[(("Day1",13,15),"OO")],[(("Day2",10,12),"SE")]],
--- [[(("Day1",8,10),"OO")],[(("Day1",10,12),"SE")],[(("Day1",13,15),"OO")],[(("Day3",8,10),"SE")]],
--- [[(("Day1",8,10),"OO")],[(("Day1",10,12),"SE")],[(("Day1",13,15),"OO")],[(("Day3",10,12),"SE")]],
--- [[(("Day1",8,10),"OO")],[(("Day1",10,12),"SE")],[(("Day2",8,10),"OO")],[(("Day2",10,12),"SE")]],
--- [[(("Day1",8,10),"OO")],[(("Day1",10,12),"SE")],[(("Day2",8,10),"OO")],[(("Day3",8,10),"SE")]],
--- [[(("Day1",8,10),"OO")],[(("Day1",10,12),"SE")],[(("Day2",8,10),"OO")],[(("Day3",10,12),"SE")]]]
 
 -- give points to a timetable to compare with other timetables
 -- the timetable with the lowest points is better
@@ -144,18 +104,18 @@ applyRules (t:ts) = applyConcurrentModulesRule (t:ts)
 mapIndex :: [Int] -> [(Int, Int)]
 mapIndex (p:ps) = zip [0..n] (p:ps) where n = (length (p:ps) - 1)
 
+-- In order to compare the timetables, we give points to them by applying different rules.
 mapPointsToTimetable :: [[[t]]] -> [(Int, Int)]
 mapPointsToTimetable (t:ts) = mapIndex (map applyRules (t:ts))
--- [(0,20),(1,20),(2,20),(3,0),(4,0),(5,0),(6,0),(7,0),(8,0)]
 
 sortByPoints :: [(Int, Int)] -> [(Int, Int)]
 sortByPoints (p:ps) = sortBy (compare `on` snd) (p:ps)
 
+-- sort the list by points and returns the index with least points.
 getIndexOfLeastPoints :: [(Int, Int)] -> Int
 getIndexOfLeastPoints (t:ts) = fst (head (sortByPoints (t:ts)))
 
--- [[(("Day1",8,10),"OO")],[(("Day1",10,12),"SE")],[(("Day1",13,15),"OO")],[(("Day2",10,12),"SE")]]
--- enough rules should be applied to get better timetable
+-- returns the timetable at given index.
 getTimetableByIndex :: [t] -> Int -> t
 getTimetableByIndex (t:ts) index = (t:ts) !! index
 
