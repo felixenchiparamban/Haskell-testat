@@ -15,7 +15,31 @@ modulesPlan = [
     (AN1, (Day1, 13, 15), [(Day2, 10, 12), (Day2, 13, 15), (Day3, 15, 17)])]
 ```
 
+## Get Timetable
+
 You can pass your selection of modules (e.g. `[OO, SE]`) and our program will give you the best suitable timetable for the next semester.
+
+```hs
+*Main> getMyTimetable  [OO, SE]
+
+[[((Day1,8,10),OO)],[((Day1,10,12),SE)],[((Day1,13,15),OO)],[((Day2,10,12),SE)]]
+```
+
+In background, the `getMyTimetable` function calls the following functions sequencely to get the most suitable timetable. In the [Function Reference](#function-references-and-examples) section, each function is explained in detail with step by step instruction.
+
+```hs
+getMyTimetable (m:ms) =
+    getTimetableByIndex step5 $
+    getIndexOfLeastPoints $
+    mapPointsToTimetable step5
+        where {
+            step5 = mapTimetablesGrouppedByTimeslot $
+                    mapTimetableWithGenericTimeslots $
+                    generateAllTimetables $
+                    mapMyModulePlanToTimeslots $
+                    getMyModulesPlan (m:ms)
+        }
+```
 
 The complete code is [here](timetable.hs).
 
@@ -45,7 +69,7 @@ The function `mapMyModulePlanToTimeslots` generate all possible tuples of lectur
 3. `(OO,((Day1,8,10),(Day2,8,10)))`
 
 ```hs
-*Main> step2 = mapMyModulePlanToTimeslots result0
+*Main> step2 = mapMyModulePlanToTimeslots step1
 
 *Main> step2
 [[(OO,((Day1,8,10),(Day1,10,12))),(OO,((Day1,8,10),(Day1,13,15))),(OO,((Day1,8,10),(Day2,8,10)))],

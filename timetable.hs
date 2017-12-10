@@ -119,11 +119,23 @@ getIndexOfLeastPoints (t:ts) = fst (head (sortByPoints (t:ts)))
 getTimetableByIndex :: [t] -> Int -> t
 getTimetableByIndex (t:ts) index = (t:ts) !! index
 
--- TODO 
-result0 = getMyModulesPlan [OO, SE]
-result01 = mapMyModulePlanToTimeslots result0
-result1 = mapTimetableWithGenericTimeslots (generateAllTimetables result01)
-result2 = mapTimetablesGrouppedByTimeslot result1
-result3 = mapPointsToTimetable result2
-result4 = getIndexOfLeastPoints result3
-myTimetable = getTimetableByIndex result2 result4
+-- Manual Steps
+-- result0 = getMyModulesPlan [OO, SE]
+-- result01 = mapMyModulePlanToTimeslots result0
+-- result1 = mapTimetableWithGenericTimeslots (generateAllTimetables result01)
+-- result2 = mapTimetablesGrouppedByTimeslot result1
+-- result3 = mapPointsToTimetable result2
+-- result4 = getIndexOfLeastPoints result3
+-- myTimetable = getTimetableByIndex result2 result4
+
+getMyTimetable (m:ms) =
+    getTimetableByIndex step5 $
+    getIndexOfLeastPoints $
+    mapPointsToTimetable step5
+        where {
+            step5 = mapTimetablesGrouppedByTimeslot $
+                    mapTimetableWithGenericTimeslots $
+                    generateAllTimetables $
+                    mapMyModulePlanToTimeslots $
+                    getMyModulesPlan (m:ms)
+        }
