@@ -166,7 +166,4 @@ result1 = mapTimetableWithGenericTimeslots (generateAllTimetables result01)
 result2 = mapTimetablesGrouppedByTimeslot result1
 result3 = mapPointsToTimetable result2
 result4 = getIndexOfLeastPoints result3
-result5 = getTimetableByIndex result2 result4
-
-getMyTimetable n  =  sum result6
-                            where result6 = [1..n]
+myTimetable = getTimetableByIndex result2 result4
