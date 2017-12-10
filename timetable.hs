@@ -2,40 +2,30 @@ import Data.List (groupBy, sortBy)
 import Data.Function (on)
 import Data.Ord
 
--- Timetable
-
--- define Module Type
-data Module = OO | BSYS1 | BSYS2 | SE | PARAPROG | ENGPROJ | AN1 | AN2 | DM deriving (Show, Eq) 
-
--- define Class Type
-data Class = Lecture (Day, Int, Int) | Exercise (Day, Int, Int) deriving Show
-
--- define Day Type
-data Day = Day1 | Day2 | Day3 | Day4 | Day5 deriving Show
-
 -- Knowledge Base
+
+-- the list should be sorted in order to group
+-- unsortedList = [(("Day2",10,12),"SE"),(("Day1",10,12),"OO"),(("Day1",8,10),"OO"),(("Day1",10,12),"SE")]
+-- sortedList = [(("Day1",8,10),"OO"),(("Day1",10,12),"OO"),(("Day1",10,12),"SE"),(("Day2",10,12),"SE")]
+
 -- Module tuples
-modulesTimetable = [
+modulesPlan = [
     ("OO", ("Day1", 8, 10), [("Day1", 10, 12), ("Day1", 13, 15), ("Day2", 8, 10)]), 
     ("SE", ("Day1", 10, 12), [("Day2", 10, 12), ("Day3", 8, 10), ("Day3", 10, 12)]),
     ("AN1", ("Day1", 13, 15), [("Day2", 10, 12), ("Day2", 13, 15), ("Day3", 15, 17)])]
 
--- find out lecture for the given module
--- lectures :: Module -> (Day, Int, Int)
-lecture x = [l | (m, l, es) <- modulesTimetable, x == m]
-
 -- find out lecture and exercise sessions of my modules
-myModulesTimetable (x:xs) = [(m,l, es) | (m, l, es) <- modulesTimetable, m `elem` (x:xs)]
+getMyModulesPlan (x:xs) = [(m,l, es) | (m, l, es) <- modulesPlan, m `elem` (x:xs)]
 
-mapModuleExercises (m, l, es) = [ (m, (l, e)) | e <- es]
-myModulePlanCombinations myModules = map mapModuleExercises (myModulesTimetable myModules)
--- myModulePlanCombinations ["OO", "SE"]
+generateAllTimeslots (m, l, es) = [ (m, (l, e)) | e <- es]
+mapMyModulePlanToTimeslots myModulePlan = map generateAllTimeslots myModulePlan
+-- mapMyModulePlanToTimeslots ["OO", "SE"]
 -- result would be [[(m, (l, e))]]
 -- [[("OO",(("Day1",8,10),("Day1",10,12))),("OO",(("Day1",8,10),("Day1",13,15))),("OO",(("Day1",8,10),("Day2",8,10)))],
 --  [("SE",(("Day1",10,12),("Day2",10,12))),("SE",(("Day1",10,12),("Day3",8,10))),("SE",(("Day1",10,12),("Day3",10,12)))]]
 
 -- find out all possible timetables
-allTimetables myModules = sequence (myModulePlanCombinations myModules)
+generateAllTimetables  myModuleTimeslots = sequence myModuleTimeslots
 
 -- for OO and SE, 9 possible timetables
 -- [[("OO",(("Day1",8,10),("Day1",10,12))),("SE",(("Day1",10,12),("Day2",10,12)))],
@@ -66,13 +56,13 @@ mergeAll ([]:xss) = mergeAll xss
 mergeAll ((x:xs):xss) = x : mergeTwo xs (mergeAll xss)
 
 -- map modules to timeslot
-mapTimeSlot (m, (l, e)) = [(t, m) | t <- [l, e]]
--- mapped timeslot: map mapTimeSlot oneTimetable 
+convertToGenericTimeslot (m, (l, e)) = [(t, m) | t <- [l, e]]
+-- mapped timeslot: map convertToGenericTimeslot oneTimetable 
 -- [[(("Day1",8,10),"OO"),(("Day1",10,12),"OO")],
 --  [(("Day1",10,12),"SE"),(("Day2",10,12),"SE")]]
 
 -- all time tables mapped to time slots
-allTimetablesMappedWithTimeSlot (t:ts) = map (\aTimetable -> mergeAll (map mapTimeSlot aTimetable)) (t:ts)
+mapTimetableWithGenericTimeslots (t:ts) = map (\aTimetable -> mergeAll (map convertToGenericTimeslot aTimetable)) (t:ts)
 
 -- [[(("Day1",8,10),"OO"),(("Day1",10,12),"OO"),(("Day1",10,12),"SE"),(("Day2",10,12),"SE")],
 -- [(("Day1",8,10),"OO"),(("Day1",10,12),"OO"),(("Day1",10,12),"SE"),(("Day3",8,10),"SE")],
@@ -84,23 +74,14 @@ allTimetablesMappedWithTimeSlot (t:ts) = map (\aTimetable -> mergeAll (map mapTi
 -- [(("Day1",8,10),"OO"),(("Day1",10,12),"SE"),(("Day2",8,10),"OO"),(("Day3",8,10),"SE")],
 -- [(("Day1",8,10),"OO"),(("Day1",10,12),"SE"),(("Day2",8,10),"OO"),(("Day3",10,12),"SE")]]
 
-result1 = allTimetablesMappedWithTimeSlot (allTimetables ["OO", "SE"])
-
 -- group timeslots
--- the list should be sorted in order to group
--- unsortedList = [(("Day2",10,12),"SE"),(("Day1",10,12),"OO"),(("Day1",8,10),"OO"),(("Day1",10,12),"SE")]
-sortedList = [(("Day1",8,10),"OO"),(("Day1",10,12),"OO"),(("Day1",10,12),"SE"),(("Day2",10,12),"SE")]
-
--- xs = [("a",1),("b",2),("a",1)]
--- mySort n = sortBy (compare `on` snd) n
--- fi = groupBy ((==) `on` snd) (mySort xs)
 
 -- [[(("Day1",8,10),"OO")],
 --  [(("Day1",10,12),"OO"),(("Day1",10,12),"SE")],
 --  [(("Day2",10,12),"SE")]]
 groupByTimeSlot aSortedTimetable = groupBy ((==) `on` fst) aSortedTimetable
 
-allTimetablesGrouppedByTimeSlot (t:ts) = map groupByTimeSlot (t:ts)
+mapTimetablesGrouppedByTimeslot (t:ts) = map groupByTimeSlot (t:ts)
 
 -- [[[(("Day1",8,10),"OO")],[(("Day1",10,12),"OO"),(("Day1",10,12),"SE")],[(("Day2",10,12),"SE")]],
 -- [[(("Day1",8,10),"OO")],[(("Day1",10,12),"OO"),(("Day1",10,12),"SE")],[(("Day3",8,10),"SE")]],
@@ -112,7 +93,9 @@ allTimetablesGrouppedByTimeSlot (t:ts) = map groupByTimeSlot (t:ts)
 -- [[(("Day1",8,10),"OO")],[(("Day1",10,12),"SE")],[(("Day2",8,10),"OO")],[(("Day3",8,10),"SE")]],
 -- [[(("Day1",8,10),"OO")],[(("Day1",10,12),"SE")],[(("Day2",8,10),"OO")],[(("Day3",10,12),"SE")]]]
 
-result2 = allTimetablesGrouppedByTimeSlot result1
+-- TODO 
+-- result1 = mapTimetableWithGenericTimeslots (generateAllTimetables  ["OO", "SE"])
+-- result2 = mapTimetablesGrouppedByTimeslot result1
 
 -- give points to a timetable to compare with other timetables
 -- the timetable with the lowest points is better
@@ -127,29 +110,38 @@ result2 = allTimetablesGrouppedByTimeSlot result1
 --  [(("Day1",10,12),"OO"),(("Day1",10,12),"SE")], --> 10 * 2 = 20
 --  [(("Day2",10,12),"SE")]] --> 0
 
-mapPointsToTimeSlot (ts:tss) = 
+grantPointsToConcurrentModules (ts:tss) = 
     if n <= 1 
         then 0
         else n * 10
     where n = length(ts:tss)
 
 -- apply Rule 1 to timetable
-applyConcurrentModulesRule (t:ts) = sum (map mapPointsToTimeSlot (t:ts))
+applyConcurrentModulesRule (t:ts) = sum (map grantPointsToConcurrentModules (t:ts))
 
 -- list all rules here
 applyRules (t:ts) = applyConcurrentModulesRule (t:ts) 
                     -- + applyConcurrentModulesRule (t:ts)
 
 mapIndex (t:ts) = zip [0..n] (t:ts) where n = (length (t:ts) - 1)
-allTimetablesMappedWithPoints (t:ts) = mapIndex (map applyRules (t:ts))
-
-result3 = allTimetablesMappedWithPoints result2
+mapPointsToTimetable (t:ts) = mapIndex (map applyRules (t:ts))
 -- [(0,20),(1,20),(2,20),(3,0),(4,0),(5,0),(6,0),(7,0),(8,0)]
 
-sortPoints (p:ps) = sortBy (compare `on` snd) (p:ps)
 
-indexOfMostConvenientTimetable (t:ts) = fst (head (sortPoints (allTimetablesMappedWithPoints result2)))
+
+sortByPoints (p:ps) = sortBy (compare `on` snd) (p:ps)
+
+getIndexOfLeastPoints (t:ts) = fst (head (sortByPoints (t:ts)))
 
 -- [[(("Day1",8,10),"OO")],[(("Day1",10,12),"SE")],[(("Day1",13,15),"OO")],[(("Day2",10,12),"SE")]]
 -- enough rules should be applied to get better timetable
-bestTimetable (t:ts) = (t:ts) !! (indexOfMostConvenientTimetable (t:ts))
+getTimetableByIndex (t:ts) index = (t:ts) !! index
+
+-- TODO 
+result0 = getMyModulesPlan ["OO", "SE"]
+result01 = mapMyModulePlanToTimeslots result0
+result1 = mapTimetableWithGenericTimeslots (generateAllTimetables result01)
+result2 = mapTimetablesGrouppedByTimeslot result1
+result3 = mapPointsToTimetable result2
+result4 = getIndexOfLeastPoints result3
+result5 = getTimetableByIndex result2 result4
