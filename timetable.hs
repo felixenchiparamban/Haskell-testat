@@ -2,6 +2,16 @@ import Data.List (groupBy, sortBy)
 import Data.Function (on)
 import Data.Ord
 
+-- define Module Type
+data Module = OO | BSYS1 | BSYS2 | SE | PARAPROG | ENGPROJ | AN1 | AN2 | DM deriving (Eq, Ord, Show, Read) 
+
+-- define Class Type
+data Class = Lecture (Day, Int, Int) | Exercise (Day, Int, Int) deriving (Eq, Ord, Show, Read)
+
+-- define Day Type
+data Day = Day1 | Day2 | Day3 | Day4 | Day5 deriving (Eq, Ord, Show, Read)
+
+
 -- Knowledge Base
 
 -- the list should be sorted in order to group
@@ -10,9 +20,9 @@ import Data.Ord
 
 -- Module tuples
 modulesPlan = [
-    ("OO", ("Day1", 8, 10), [("Day1", 10, 12), ("Day1", 13, 15), ("Day2", 8, 10)]), 
-    ("SE", ("Day1", 10, 12), [("Day2", 10, 12), ("Day3", 8, 10), ("Day3", 10, 12)]),
-    ("AN1", ("Day1", 13, 15), [("Day2", 10, 12), ("Day2", 13, 15), ("Day3", 15, 17)])]
+    (OO, (Day1, 8, 10), [(Day1, 10, 12), (Day1, 13, 15), (Day2, 8, 10)]), 
+    (SE, (Day1, 10, 12), [(Day2, 10, 12), (Day3, 8, 10), (Day3, 10, 12)]),
+    (AN1, (Day1, 13, 15), [(Day2, 10, 12), (Day2, 13, 15), (Day3, 15, 17)])]
 
 -- find out lecture and exercise sessions of my modules
 getMyModulesPlan (x:xs) = [(m,l, es) | (m, l, es) <- modulesPlan, m `elem` (x:xs)]
@@ -138,7 +148,7 @@ getIndexOfLeastPoints (t:ts) = fst (head (sortByPoints (t:ts)))
 getTimetableByIndex (t:ts) index = (t:ts) !! index
 
 -- TODO 
-result0 = getMyModulesPlan ["OO", "SE"]
+result0 = getMyModulesPlan [OO, SE]
 result01 = mapMyModulePlanToTimeslots result0
 result1 = mapTimetableWithGenericTimeslots (generateAllTimetables result01)
 result2 = mapTimetablesGrouppedByTimeslot result1
