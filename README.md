@@ -27,6 +27,7 @@ You can pass your selection of modules (e.g. `[OO, SE]`) and our program will gi
 
 In background, the `getMyTimetable` function calls the following functions sequentially to get the most suitable timetable. In the [Function Reference](#function-references-and-examples) section, each function is explained in detail with step by step instruction.
 
+getMyTimetable with `$` and `where`.
 ```hs
 getMyTimetable (m:ms) =
     getTimetableByIndex step5 $
@@ -39,6 +40,19 @@ getMyTimetable (m:ms) =
                     mapMyModulePlanToTimeslots $
                     getMyModulesPlan (m:ms)
         }
+```
+
+getMyTimetable2 with `do` and `let`.
+```hs
+getMyTimetable2 (m:ms) = do
+    let step1 = getMyModulesPlan (m:ms)
+    let step2 = mapMyModulePlanToTimeslots step1
+    let step3 = generateAllTimetables step2
+    let step4 = mapTimetableWithGenericTimeslots step3
+    let step5 = mapTimetablesGrouppedByTimeslot step4
+    let step6 = mapPointsToTimetable step5
+    let step7 = getIndexOfLeastPoints step6
+    getTimetableByIndex step5 step7
 ```
 
 The complete code is [here](timetable.hs).
