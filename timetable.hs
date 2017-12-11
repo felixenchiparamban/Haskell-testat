@@ -128,6 +128,7 @@ getTimetableByIndex (t:ts) index = (t:ts) !! index
 -- result4 = getIndexOfLeastPoints result3
 -- myTimetable = getTimetableByIndex result2 result4
 
+-- variant with $ and where
 getMyTimetable (m:ms) =
     getTimetableByIndex step5 $
     getIndexOfLeastPoints $
@@ -139,3 +140,14 @@ getMyTimetable (m:ms) =
                     mapMyModulePlanToTimeslots $
                     getMyModulesPlan (m:ms)
         }
+
+-- variant with do and let
+getMyTimetable2 (m:ms) = do
+    let step1 = getMyModulesPlan (m:ms)
+    let step2 = mapMyModulePlanToTimeslots step1
+    let step3 = generateAllTimetables step2
+    let step4 = mapTimetableWithGenericTimeslots step3
+    let step5 = mapTimetablesGrouppedByTimeslot step4
+    let step6 = mapPointsToTimetable step5
+    let step7 = getIndexOfLeastPoints step6
+    getTimetableByIndex step5 step7
